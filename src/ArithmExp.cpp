@@ -1,29 +1,30 @@
 #include "ArithmExp.h"
-#include <stack>
+#include "MyStack.h"
 #include "math.h"
 #include <iostream>
-ArithmExp::ArithmExp(char *exp) {
+ArithmExp::ArithmExp(char *exp_) {
     int n;
-    for (n=0; exp[n] != 0; n++) {}
-    s = new char[n+1];
+    for (n=0; exp_[n] != 0; n++) {}
+    exp = new char[n+1];
     for (int i=0; i < n+1; i++)
-        s[i] = exp[i];
-    p = 0;
-    vp = 0;
+        exp[i] = exp_[i];
+    parametr = 0;
+    pvalue = 0;
     np = 0;
+    rpn = 0;
 }
 ArithmExp::~ArithmExp(void) {
-    delete []s;
-    delete []p;
-    delete []vp;
+    delete []exp;
+    delete []parametr;
+    delete []pvalue;
 }
 void ArithmExp::InputParametr(char c,  int value) {
     np++;
-    p = (char*)realloc(p,  (np+1)*sizeof(char));
-    p[np-1] = c;
-    p[np] = 0;
-    vp = (int*)realloc(vp,  np*sizeof(int));
-    vp[np-1] = value;
+    parametr = (char*)realloc(parametr,  (np+1)*sizeof(char));
+    parametr[np-1] = c;
+    parametr[np] = 0;
+    pvalue = (int*)realloc(pvalue,  np*sizeof(int));
+    pvalue[np-1] = value;
 }
 bool ArithmExp::IsOp(char c) {
     if ( (c == '+') || (c == '-') || (c == '*') || (c == '/') || (c == '^') || (c == '|') || ( c == '(') || (c == ')') )
@@ -42,124 +43,87 @@ int ArithmExp::Priority(char op) {
     }
 }
 char* ArithmExp::ReversePolishNotation() {
-    std::stack<char> st;
+    MyStack<char> st;
     int n,  k = 0;
     int f = 0,  br = 0;
     bool flag = 0,  fl = 0;
-    for (n=0; s[n] != 0; n++) {}
-    char *res = 0;
-    for (int i=0; s[i] != 0; i++) {
+    for (n=0; exp[n] != 0; n++) {}
+    for (int i=0; exp[i] != 0; i++) {
         fl = 0;
-        if ( (i == 0) && (s[i] == '-') ) {
-            res = (char*)realloc(res,  (k+2)*sizeof(char));
-            res[k++] = '-';
-            res[k++] = ' ';
+        if ( (i == 0) && (exp[i] == '-') ) {
+            rpn = (char*)realloc(rpn,  (k+2)*sizeof(char));
+            rpn[k++] = '-';
+            rpn[k++] = ' ';
             continue;
         }
         if (i != 0) {
-            if ( ( (s[i-1] == '(') && (s[i] == '-') ) || ( (s[i-1] == '|') && (s[i] == '-') ) ) {
-                res = (char*)realloc(res,  (k+2)*sizeof(char));
-                res[k++] = '-';
-                res[k++] = ' ';
+            if ( ( (exp[i-1] == '(') && (exp[i] == '-') ) || ( (exp[i-1] == '|') && (exp[i] == '-') ) ) {
+                rpn = (char*)realloc(rpn,  (k+2)*sizeof(char));
+                rpn[k++] = '-';
+                rpn[k++] = ' ';
                 continue;
             }
         }
-        if (!IsOp(s[i])) {
-            if ( ( (s[i] > 96) && (s[i] < 123) ) ) {
-                if (p == 0) {
-                    std::cout << "Input parametr" << std::endl;
-                    return 0;
-                }
-                for (int j=0; p[j] != 0; j++) {
-                    if (s[i] == p[j]) {
-                        fl = 1;
-                        int ns = 0;
-                        if (vp[j] < 0) {
-                            res = (char*)realloc(res,  (k+2)*sizeof(char));
-                            res[k++] = '-';
-                            res[k++] = ' ';
-                        }
-                        for (int tmp=abs(vp[j]); tmp != 0; ns++,  tmp=tmp/10) {}
-                        int tmp = abs(vp[j]);
-                        for (int l=ns-1; l >= 0; l--) {
-                            res = (char*)realloc(res,  (k+1)*sizeof(char));
-                            res[k++] = tmp / pow(10.0,  l) + '0';
-                            tmp = tmp % (int)pow(10.0,  l);
-                        }
-                        res = (char*)realloc(res,  (k+1)*sizeof(char));
-                        res[k++] = ' ';
-                        break;
-                    } else {
-                        continue;
-                    }
-                }
-                if (fl == 0) {
-                    std::cout << "Input parametr" << std::endl;
-                    return 0;
-                }
-            } else {
-                if ( (s[i] > 47) && (s[i] < 58) ) {
-                    for (; ( (!IsOp(s[i])) && (s[i] != 0) ); i++) {
-                        if (!( (s[i] > 47) && (s[i] < 58) ) )
+        if (!IsOp(exp[i])) {
+            if ( ( (exp[i] > 96) && (exp[i] < 123) ) ) {
+                rpn = (char*)realloc(rpn, (k+1)*sizeof(char));
+                rpn[k++] = exp[i];
+                } else {
+                if ( (exp[i] > 47) && (exp[i] < 58) ) {
+                    for (; ( (!IsOp(exp[i])) && (exp[i] != 0) ); i++) {
+                        if (!( (exp[i] > 47) && (exp[i] < 58) ) )
                             throw 1;
-                        res = (char*)realloc(res, (k+1)*sizeof(char));
-                        res[k++] = s[i];
+                        rpn = (char*)realloc(rpn, (k+1)*sizeof(char));
+                        rpn[k++] = exp[i];
                     }
-                res = (char*)realloc(res, (k+1)*sizeof(char));
-                res[k++] = ' ';
+                rpn = (char*)realloc(rpn, (k+1)*sizeof(char));
+                rpn[k++] = ' ';
                 i--;
                 } else {
                     throw 1;
                 }
               }
         } else {
-            if ((st.empty()) || (s[i] == '(') || ((st.top() == '(') && (s[i] != ')')) || ((s[i] == '|') && (f == 0)) || ((st.top() == '|') && (s[i] != '|')) || ((s[i] == '|') && (((s[i-1] == '|') && (flag == 1)) || ((s[i-1] == '+') || (s[i-1] == '-') || (s[i-1] == '*') || (s[i-1] == '/') || (s[i-1] == '^'))))) {
-                st.push(s[i]);
+            if ((st.IsEmpty()) || (exp[i] == '(') || ((st.GetTop() == '(') && (exp[i] != ')')) || ((exp[i] == '|') && (f == 0)) || ((st.GetTop() == '|') && (exp[i] != '|')) || ((exp[i] == '|') && (((exp[i-1] == '|') && (flag == 1)) || ((exp[i-1] == '+') || (exp[i-1] == '-') || (exp[i-1] == '*') || (exp[i-1] == '/') || (exp[i-1] == '^'))))) {
+                st.push(exp[i]);
                 flag = 1;
-                if (s[i] == '|')
+                if (exp[i] == '|')
                     f++;
-                if (s[i] == '(')
+                if (exp[i] == '(')
                     br++;
             } else {
-                if (s[i] == ')') {
+                if (exp[i] == ')') {
                     br--;
-                    while (st.top() != '(') {
-                        res = (char*)realloc(res, (k+1)*sizeof(char));
-                        res[k++] = st.top();
+                    while (st.GetTop() != '(') {
+                        rpn = (char*)realloc(rpn, (k+1)*sizeof(char));
+                        rpn[k++] = st.GetTop();
                         st.pop();
                     }
                     st.pop();
                 } else {
-                    if ( (s[i] == '|') && (f > 0) ) {
+                    if ( (exp[i] == '|') && (f > 0) ) {
                         flag = 0;
-                        while (st.top() != '|') {
-                        res = (char*)realloc(res, (k+1)*sizeof(char));
-                        res[k++] = st.top();
+                        while (st.GetTop() != '|') {
+                        rpn = (char*)realloc(rpn, (k+1)*sizeof(char));
+                        rpn[k++] = st.GetTop();
                         st.pop();
                     }
                         st.pop();
-                        res = (char*)realloc(res, (k+2)*sizeof(char));
-                        res[k++] = '|';
-                        res[k++] = '|';
+                        rpn = (char*)realloc(rpn, (k+2)*sizeof(char));
+                        rpn[k++] = '|';
+                        rpn[k++] = '|';
                         f--;
                     } else {
-                        if (s[i] == '^') {
-                            if (Priority(st.top()) <= Priority(s[i])) {
-                                st.push(s[i]);
-                            } else {
-                                res = (char*)realloc(res, (k+1)*sizeof(char));
-                                res[k++] = st.top();
-                                st.pop();
-                                st.push(s[i]);
-                            }
+                        if (exp[i] == '^') {
+                                st.push(exp[i]);
                         } else {
-                            if (Priority(st.top()) < Priority(s[i])) {
-                                   st.push(s[i]);
+                            if (Priority(st.GetTop()) < Priority(exp[i])) {
+                                   st.push(exp[i]);
                             } else {
-                                res = (char*)realloc(res, (k+1)*sizeof(char));
-                                res[k++] = st.top();
+                                rpn = (char*)realloc(rpn, (k+1)*sizeof(char));
+                                rpn[k++] = st.GetTop();
                                 st.pop();
-                                st.push(s[i]);
+                                st.push(exp[i]);
                             }
                         }
                     }
@@ -169,23 +133,43 @@ char* ArithmExp::ReversePolishNotation() {
     }
     if ((br != 0) || (f != 0))
         throw 1;
-    while (!st.empty()) {
-        res = (char*)realloc(res, (k+1)*sizeof(char));
-        res[k++] = st.top();
+    while (!st.IsEmpty()) {
+        rpn = (char*)realloc(rpn, (k+1)*sizeof(char));
+        rpn[k++] = st.GetTop();
         st.pop();
     }
-    res[k] = 0;
-    return res;
+    rpn[k] = 0;
+    return rpn;
 }
-double ArithmExp::Calc() {
-    char *rpn = ReversePolishNotation();
-    std::stack<int> st;
+int ArithmExp::Calc() {
+    if (rpn == 0)
+        ReversePolishNotation();
+    MyStack<int> st;
     int n;
+    bool fl = 0;
     int res;
     if (rpn == 0)
         throw 1;
     for (int i=0; rpn[i] != 0; i++) {
         if (!IsOp(rpn[i])) {
+            if ( ( (rpn[i] > 96) && (rpn[i] < 123) ) ) {
+                if (parametr == 0) {
+                    std::cout << "Input parametr" << std::endl;
+                    throw 1;
+                  }
+                for (int j=0; j < np; j++) {
+                    if (rpn[i] == parametr[j]) {
+                        fl = 1;
+                        st.push(pvalue[j]);
+                    }
+                }
+                if (fl == 0) {
+                    std::cout << "Input parametr" << std::endl;
+                    throw 1;
+                }
+				fl = 0;
+				continue;
+            } 
             int operand = 0;
             for (n=0; rpn[i+n] != ' '; n++) {}
             for (int j=0; rpn[i] != ' '; i++,  j++)
@@ -195,14 +179,14 @@ double ArithmExp::Calc() {
             if (rpn[i] == '^') {
                 int r;
                 double l;
-                if (!st.empty()) {
-                    r = st.top();
+                if (!st.IsEmpty()) {
+                    r = st.GetTop();
                     st.pop();
                 } else {
                     throw 1;
                 }
-                if (!st.empty()) {
-                    l = st.top();
+                if (!st.IsEmpty()) {
+                    l = st.GetTop();
                     st.pop();
                 } else {
                     throw 1;
@@ -211,14 +195,14 @@ double ArithmExp::Calc() {
             }
             if (rpn[i] == '+') {
                 int r,  l;
-                if (!st.empty()) {
-                    r = st.top();
+                if (!st.IsEmpty()) {
+                    r = st.GetTop();
                     st.pop();
                 } else {
                     throw 1;
                 }
-                if (!st.empty()) {
-                l = st.top();
+                if (!st.IsEmpty()) {
+                l = st.GetTop();
                 st.pop();
                 } else {
                     throw 1;
@@ -235,14 +219,14 @@ double ArithmExp::Calc() {
                     st.push(-operand);
                 } else {
                     int r, l;
-                    if (!st.empty()) {
-                        r = st.top();
+                    if (!st.IsEmpty()) {
+                        r = st.GetTop();
                         st.pop();
                     } else {
                         throw 1;
                     }
-                    if (!st.empty()) {
-                        l = st.top();
+                    if (!st.IsEmpty()) {
+                        l = st.GetTop();
                         st.pop();
                     } else {
                         throw 1;
@@ -252,14 +236,14 @@ double ArithmExp::Calc() {
             }
             if (rpn[i] == '*') {
                 int r, l;
-                if (!st.empty()) {
-                    r = st.top();
+                if (!st.IsEmpty()) {
+                    r = st.GetTop();
                     st.pop();
                 } else {
                     throw 1;
                 }
-                if (!st.empty()) {
-                    l = st.top();
+                if (!st.IsEmpty()) {
+                    l = st.GetTop();
                     st.pop();
                 } else {
                     throw 1;
@@ -268,14 +252,14 @@ double ArithmExp::Calc() {
             }
             if (rpn[i] == '/') {
                 int r, l;
-                if (!st.empty()) {
-                    r = st.top();
+                if (!st.IsEmpty()) {
+                    r = st.GetTop();
                     st.pop();
                 } else {
                     throw 1;
                 }
-                if (!st.empty()) {
-                    l = st.top();
+                if (!st.IsEmpty()) {
+                    l = st.GetTop();
                     st.pop();
                 } else {
                     throw 1;
@@ -287,8 +271,8 @@ double ArithmExp::Calc() {
             }
             if (rpn[i] == '|') {
                 int tmp;
-                if (!st.empty()) {
-                    tmp = st.top();
+                if (!st.IsEmpty()) {
+                    tmp = st.GetTop();
                     st.pop();
                 } else {
                     throw 1;
@@ -298,9 +282,9 @@ double ArithmExp::Calc() {
             }
         }
     }
-    res = st.top();
+    res = st.GetTop();
     st.pop();
-    if (st.empty()) {
+    if (st.IsEmpty()) {
         return res;
     } else {
         std::cout << "error expression";

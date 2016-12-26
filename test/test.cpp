@@ -32,6 +32,8 @@ TEST(ArithmExp, can_calculate_arifmetic_expression_with_one_operation) {
 }
 TEST(ArithmExp, can_calculate_arifmetic_expression_with_two_operations) {
     ArithmExp a("2+3*4");
+	std::cout << a.ReversePolishNotation() << std::endl;
+	std::cout << a.Calc() << std::endl;
     EXPECT_EQ(14, a.Calc());
 }
 TEST(ArithmExp, can_calculate_arifmetic_expression_with_pow) {
@@ -95,11 +97,6 @@ TEST(ArithmExp, can_calculate_arifmetic_expression_with_parametr) {
     a.InputParametr('a', 5);
     EXPECT_EQ(6, a.Calc());
 }
-TEST(ArithmExp, can_convert_to_Polish_notation_twelve) {
-    ArithmExp a("a+1");
-    a.InputParametr('a', 155);
-    EXPECT_EQ(156, a.Calc());
-}
 TEST(ArithmExp, throw_when_there_are_not_enough_parametrs) {
     ArithmExp a("a+b");
     a.InputParametr('a', 155);
@@ -135,6 +132,10 @@ TEST(ArithmExp, throw_when_the_expression_is_incorrect_2) {
 }
 TEST(ArithmExp, throw_when_the_expression_is_incorrect_3) {
     ArithmExp a("2+8+()");
+    EXPECT_ANY_THROW(a.Calc());
+}
+TEST(ArithmExp, throw_when_the_expression_is_incorrect_4) {
+    ArithmExp a("--2");
     EXPECT_ANY_THROW(a.Calc());
 }
 TEST(ArithmExp, throw_when_there_are_not_enough_operands) {
