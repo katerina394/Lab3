@@ -19,12 +19,21 @@ ArithmExp::~ArithmExp(void) {
     delete []pvalue;
 }
 void ArithmExp::InputParametr(char c,  int value) {
+	bool fl = 0;
+	for (int i=0; i < np; i++) {
+		if (parametr[i] == c) {
+			pvalue[i] = value;
+			fl = 1;
+		}
+	}
+	if (fl == 0) {
     np++;
     parametr = (char*)realloc(parametr,  (np+1)*sizeof(char));
     parametr[np-1] = c;
     parametr[np] = 0;
     pvalue = (int*)realloc(pvalue,  np*sizeof(int));
     pvalue[np-1] = value;
+	}
 }
 bool ArithmExp::IsOp(char c) {
     if ( (c == '+') || (c == '-') || (c == '*') || (c == '/') || (c == '^') || (c == '|') || ( c == '(') || (c == ')') )

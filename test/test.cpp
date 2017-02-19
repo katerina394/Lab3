@@ -1,10 +1,6 @@
 #include  < gtest/gtest.h>
 #include "ArithmExp.h"
 #include <iostream>
-TEST(ArithmExp, can_define_operation) {
-    ArithmExp a("2+3*4");
-    EXPECT_TRUE(a.IsOp('+'));
-}
 TEST(ArithmExp, can_convert_to_Polish_notation) {
     ArithmExp a("2+3*4");
     char exp[] = "2 3 4 *+";
